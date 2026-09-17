@@ -33,6 +33,7 @@ namespace StudentManagement.Api.Models
 
         public DateTime EnrollmentDate { get; set; }
 
+        //Thgis is a test comment
         public bool IsActive { get; set; } = true;
     }
 }
