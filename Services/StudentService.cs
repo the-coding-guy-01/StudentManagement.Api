@@ -45,6 +45,17 @@ namespace StudentManagement.Api.Services
         public async Task<StudentDto> CreateAsync(
             CreateStudentDto dto)
         {
+
+            var emailExists =
+    await _context.Students
+        .AnyAsync(s => s.Email == dto.Email);
+
+            if (emailExists)
+            {
+                throw new InvalidOperationException(
+                    "A student with this email already exists.");
+            }
+
             await using var transaction =
                 await _context.Database.BeginTransactionAsync();
 

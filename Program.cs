@@ -17,6 +17,20 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IStudentService, StudentService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "AllowBlazorClient",
+        policy =>
+        {
+            policy
+                .WithOrigins(
+                    "http://localhost:5121")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +40,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthorization();
 
