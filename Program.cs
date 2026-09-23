@@ -17,6 +17,10 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IStudentService, StudentService>();
 
+builder.Services.AddScoped<ICourseService, CourseService>();
+
+builder.Services.AddScoped<ITeacherService, TeacherService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(

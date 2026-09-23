@@ -41,6 +41,14 @@ namespace StudentManagement.Api.Controllers
             return Ok(student);
         }
 
+        [HttpGet("count")]
+        public async Task<ActionResult<int>> GetTotalStudents()
+        {
+            var total = await _studentService.GetTotalStudentsAsync();
+
+            return Ok(total);
+        }
+
 
         [HttpPost]
         public async Task<ActionResult<StudentDto>> Create(

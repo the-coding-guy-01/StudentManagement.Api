@@ -15,5 +15,7 @@ namespace StudentManagement.Api.Services.Interfaces
             UpdateStudentDto dto);
 
         Task<bool> DeleteAsync(int id);
+
+        Task<int> GetTotalStudentsAsync();
     }
 }

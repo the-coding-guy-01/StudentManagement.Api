@@ -41,6 +41,11 @@ namespace StudentManagement.Api.Services
             return MapToDto(student);
         }
 
+        public async Task<int> GetTotalStudentsAsync()
+        {
+            return await _context.Students.CountAsync();
+        }
+
 
         public async Task<StudentDto> CreateAsync(
             CreateStudentDto dto)

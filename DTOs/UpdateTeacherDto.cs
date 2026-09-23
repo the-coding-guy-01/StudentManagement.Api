@@ -1,27 +1,32 @@
-﻿namespace StudentManagement.Api.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace StudentManagement.Api.DTOs
 {
-    public class StudentDto
+    public class UpdateTeacherDto
     {
-        public int Id { get; set; }
-
-        public string AdmissionNumber { get; set; } = string.Empty;
-
+        [Required]
+        [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
 
+        [Required]
+        [MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
 
-        public string FullName { get; set; } = string.Empty;
-
+        [Required]
+        [EmailAddress]
+        [MaxLength(150)]
         public string Email { get; set; } = string.Empty;
 
         public DateTime? DateOfBirth { get; set; }
 
+        [MaxLength(20)]
         public string Gender { get; set; } = string.Empty;
 
+        [MaxLength(20)]
         public string Phone { get; set; } = string.Empty;
 
-        public DateTime EnrollmentDate { get; set; }
+        public DateTime JoinDate { get; set; }
 
         public bool IsActive { get; set; }
     }
-}}
+}
