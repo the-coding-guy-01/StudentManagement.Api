@@ -21,6 +21,8 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 
 builder.Services.AddScoped<ITeacherService, TeacherService>();
 
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
