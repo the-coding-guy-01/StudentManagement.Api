@@ -28,5 +28,8 @@ namespace StudentManagement.Api.Models
 
         // Navigation Property
         public Teacher? Teacher { get; set; }
+
+        public ICollection<Student> Students { get; set; }
+            = new List<Student>();
     }
 }

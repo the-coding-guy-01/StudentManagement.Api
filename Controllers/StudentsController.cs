@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentManagement.Api.DTOs;
 using StudentManagement.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagement.Api.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class StudentsController : ControllerBase
@@ -88,6 +90,40 @@ namespace StudentManagement.Api.Controllers
                 await _studentService.DeleteAsync(id);
 
             if (!deleted)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpPut("{studentId:int}/course/{courseId:int}")]
+        public async Task<ActionResult<StudentDto>> AssignCourse(
+    int studentId,
+    int courseId)
+        {
+            var student =
+                await _studentService.AssignCourseAsync(
+                    studentId,
+                    courseId);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(student);
+        }
+
+        [HttpDelete("{studentId:int}/course")]
+        public async Task<IActionResult> RemoveCourse(
+    int studentId)
+        {
+            var removed =
+                await _studentService.RemoveCourseAsync(
+                    studentId);
+
+            if (!removed)
             {
                 return NotFound();
             }

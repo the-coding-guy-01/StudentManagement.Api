@@ -17,5 +17,12 @@ namespace StudentManagement.Api.Services.Interfaces
         Task<bool> DeleteAsync(int id);
 
         Task<int> GetTotalStudentsAsync();
+
+        Task<StudentDto?> AssignCourseAsync(
+            int studentId,
+            int courseId);
+
+        Task<bool> RemoveCourseAsync(
+            int studentId);
     }
 }

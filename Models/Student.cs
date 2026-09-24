@@ -35,5 +35,13 @@ namespace StudentManagement.Api.Models
 
         //Thgis is a test comment
         public bool IsActive { get; set; } = true;
+
+        // -------------------------
+        // Course relationship
+        // -------------------------
+
+        public int? CourseId { get; set; }
+
+        public Course? Course { get; set; }
     }
 }

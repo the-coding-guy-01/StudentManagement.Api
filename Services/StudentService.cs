@@ -19,7 +19,8 @@ namespace StudentManagement.Api.Services
         public async Task<List<StudentDto>> GetAllAsync()
         {
             var students = await _context.Students
-                .OrderBy(s => s.Id)
+                .Include(s => s.Course)
+                .AsNoTracking()
                 .ToListAsync();
 
             return students
@@ -31,6 +32,8 @@ namespace StudentManagement.Api.Services
         public async Task<StudentDto?> GetByIdAsync(int id)
         {
             var student = await _context.Students
+                .Include(s => s.Course)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (student == null)
@@ -156,6 +159,54 @@ namespace StudentManagement.Api.Services
             return true;
         }
 
+        public async Task<StudentDto?> AssignCourseAsync(
+            int studentId,
+            int courseId)
+        {
+            var student = await _context.Students
+                .Include(s => s.Course)
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+
+            if (student == null)
+            {
+                return null;
+            }
+
+            var course = await _context.Courses
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course == null)
+            {
+                return null;
+            }
+
+            // Assign / move student to course
+            student.CourseId = course.Id;
+            student.Course = course;
+
+            await _context.SaveChangesAsync();
+
+            return MapToDto(student);
+        }
+
+        public async Task<bool> RemoveCourseAsync(
+            int studentId)
+        {
+            var student = await _context.Students
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+
+            if (student == null)
+            {
+                return false;
+            }
+
+            student.CourseId = null;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
 
         private static StudentDto MapToDto(Student student)
         {
@@ -174,7 +225,10 @@ namespace StudentManagement.Api.Services
                 Gender = student.Gender,
                 Phone = student.Phone,
                 EnrollmentDate = student.EnrollmentDate,
-                IsActive = student.IsActive
+                IsActive = student.IsActive,
+                CourseId = student.CourseId,
+                CourseName = student.Course?.CourseName
+
             };
         }
     }
