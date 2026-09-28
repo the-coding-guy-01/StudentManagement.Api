@@ -63,6 +63,9 @@ namespace StudentManagement.Api.Services
             }
 
             student.Phone = dto.Phone.Trim();
+            student.FirstName = dto.FirstName.Trim();
+            student.LastName = dto.LastName.Trim();
+            student.Email = dto.Email.Trim();
 
             await _context.SaveChangesAsync();
 
