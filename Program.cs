@@ -37,6 +37,10 @@ builder.Services.AddScoped<
     IAuthService,
     AuthService>();
 
+builder.Services.AddScoped<
+    IStudentProfileService,
+    StudentProfileService>();
+
 
 var jwtKey =
     builder.Configuration["Jwt:Key"]
@@ -144,7 +148,55 @@ using (var scope = app.Services.CreateScope())
 
         await context.SaveChangesAsync();
     }
+
+    var testStudent =
+    await context.Students
+        .OrderBy(x => x.Id)
+        .FirstOrDefaultAsync();
+
+
+    if (testStudent != null)
+    {
+        var studentUserExists =
+            await context.AppUsers
+                .AnyAsync(
+                    x => x.StudentId ==
+                        testStudent.Id);
+
+
+        if (!studentUserExists)
+        {
+            var studentUser =
+                new AppUser
+                {
+                    Username =
+                        testStudent.AdmissionNumber,
+
+                    Role = "Student",
+
+                    StudentId =
+                        testStudent.Id,
+
+                    IsActive = true
+                };
+
+
+            studentUser.PasswordHash =
+                passwordHasher.HashPassword(
+                    studentUser,
+                    "Student@123");
+
+
+            context.AppUsers.Add(
+                studentUser);
+
+
+            await context.SaveChangesAsync();
+        }
+    }
 }
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -153,6 +205,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseCors("AllowBlazorClient");
 

@@ -35,6 +35,9 @@ namespace StudentManagement.Api.Models
 
         public bool IsActive { get; set; } = true;
 
+        [MaxLength(300)]
+        public string? ProfileImagePath { get; set; }
+
         // -------------------------
         // Course relationship
         // -------------------------
