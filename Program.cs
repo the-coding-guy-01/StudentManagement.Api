@@ -41,6 +41,10 @@ builder.Services.AddScoped<
     IStudentProfileService,
     StudentProfileService>();
 
+builder.Services.AddScoped<
+    IStudentCourseService,
+    StudentCourseService>();
+
 
 var jwtKey =
     builder.Configuration["Jwt:Key"]
