@@ -45,6 +45,8 @@ builder.Services.AddScoped<
     IStudentCourseService,
     StudentCourseService>();
 
+builder.Services.AddScoped<IAppUserService, AppUserService>();
+
 
 var jwtKey =
     builder.Configuration["Jwt:Key"]
