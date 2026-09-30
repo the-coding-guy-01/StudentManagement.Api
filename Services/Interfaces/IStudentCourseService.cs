@@ -4,7 +4,7 @@ namespace StudentManagement.Api.Services.Interfaces
 {
     public interface IStudentCourseService
     {
-        Task<MyCourseDto?> GetMyCourseAsync(
+        Task<List<MyCourseDto>> GetMyCoursesAsync(
             int studentId);
     }
 }

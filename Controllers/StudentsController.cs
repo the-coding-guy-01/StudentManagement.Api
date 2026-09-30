@@ -115,20 +115,22 @@ namespace StudentManagement.Api.Controllers
             return Ok(student);
         }
 
-        [HttpDelete("{studentId:int}/course")]
-        public async Task<IActionResult> RemoveCourse(
-    int studentId)
-        {
-            var removed =
-                await _studentService.RemoveCourseAsync(
-                    studentId);
-
-            if (!removed)
+        [HttpDelete("{studentId:int}/course/{courseId:int}")]
+            public async Task<IActionResult> RemoveCourse(
+        int studentId,
+        int courseId)
             {
-                return NotFound();
-            }
+                var removed =
+                    await _studentService.RemoveCourseAsync(
+                        studentId,
+                        courseId);
 
-            return NoContent();
-        }
+                if (!removed)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
     }
 }

@@ -2,7 +2,7 @@
 using StudentManagement.Api.Data;
 using StudentManagement.Api.Models;
 using StudentManagement.Api.Services.Interfaces;
-using StudentManagement.Shared.DTOs;
+using StudentManagement.Api.DTOs;
 
 namespace StudentManagement.Api.Services
 {

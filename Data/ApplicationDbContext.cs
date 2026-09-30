@@ -19,6 +19,8 @@ namespace StudentManagement.Api.Data
 
         public DbSet<AppUser> AppUsers { get; set; }
 
+        public DbSet<StudentCourse> StudentCourses { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -33,11 +35,22 @@ namespace StudentManagement.Api.Data
                 .HasForeignKey(c => c.TeacherId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Student>()
-                .HasOne(s => s.Course)
-                .WithMany(c => c.Students)
-                .HasForeignKey(s => s.CourseId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<StudentCourse>()
+                .HasKey(x => new
+                {
+                    x.StudentId,
+                    x.CourseId
+                });
+
+            modelBuilder.Entity<StudentCourse>()
+                .HasOne(x => x.Student)
+                .WithMany(x => x.StudentCourses)
+                .HasForeignKey(x => x.StudentId);
+
+            modelBuilder.Entity<StudentCourse>()
+                .HasOne(x => x.Course)
+                .WithMany(x => x.StudentCourses)
+                .HasForeignKey(x => x.CourseId);
         }
     }
 }

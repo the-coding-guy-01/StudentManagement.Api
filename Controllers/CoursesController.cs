@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentManagement.Api.Services.Interfaces;
-using StudentManagement.Shared.DTOs;
+using StudentManagement.Api.DTOs;
 
 namespace StudentManagement.Api.Controllers
 {

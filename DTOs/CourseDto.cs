@@ -1,4 +1,4 @@
-﻿namespace StudentManagement.Shared.DTOs
+﻿namespace StudentManagement.Api.DTOs
 {
     public class CourseDto
     {

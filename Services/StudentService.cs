@@ -19,7 +19,9 @@ namespace StudentManagement.Api.Services
         public async Task<List<StudentDto>> GetAllAsync()
         {
             var students = await _context.Students
-                .Include(s => s.Course)
+                .Include(s => s.StudentCourses)
+                    .ThenInclude(sc => sc.Course)
+                        .ThenInclude(c => c!.Teacher)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -32,7 +34,9 @@ namespace StudentManagement.Api.Services
         public async Task<StudentDto?> GetByIdAsync(int id)
         {
             var student = await _context.Students
-                .Include(s => s.Course)
+                .Include(s => s.StudentCourses)
+                    .ThenInclude(sc => sc.Course)
+                        .ThenInclude(c => c!.Teacher)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -44,6 +48,7 @@ namespace StudentManagement.Api.Services
             return MapToDto(student);
         }
 
+
         public async Task<int> GetTotalStudentsAsync()
         {
             return await _context.Students.CountAsync();
@@ -53,10 +58,9 @@ namespace StudentManagement.Api.Services
         public async Task<StudentDto> CreateAsync(
             CreateStudentDto dto)
         {
-
             var emailExists =
-    await _context.Students
-        .AnyAsync(s => s.Email == dto.Email);
+                await _context.Students
+                    .AnyAsync(s => s.Email == dto.Email);
 
             if (emailExists)
             {
@@ -72,7 +76,7 @@ namespace StudentManagement.Api.Services
                 var student = new Student
                 {
                     // Temporary unique value.
-                    // The final admission number is generated
+                    // Final admission number is generated
                     // after SQL Server creates the Student Id.
                     AdmissionNumber =
                         $"TMP-{Guid.NewGuid().ToString("N")[..16]}",
@@ -159,12 +163,17 @@ namespace StudentManagement.Api.Services
             return true;
         }
 
+
+        // ==========================================
+        // ASSIGN COURSE
+        // ==========================================
+
         public async Task<StudentDto?> AssignCourseAsync(
             int studentId,
             int courseId)
         {
             var student = await _context.Students
-                .Include(s => s.Course)
+                .Include(s => s.StudentCourses)
                 .FirstOrDefaultAsync(s => s.Id == studentId);
 
             if (student == null)
@@ -180,27 +189,61 @@ namespace StudentManagement.Api.Services
                 return null;
             }
 
-            // Assign / move student to course
-            student.CourseId = course.Id;
-            student.Course = course;
 
-            await _context.SaveChangesAsync();
+            // Check if student is already assigned
+            // to this course.
+            var alreadyAssigned =
+                student.StudentCourses
+                    .Any(sc => sc.CourseId == courseId);
 
-            return MapToDto(student);
+            if (!alreadyAssigned)
+            {
+                var studentCourse = new StudentCourse
+                {
+                    StudentId = studentId,
+                    CourseId = courseId
+                };
+
+                student.StudentCourses.Add(studentCourse);
+
+                await _context.SaveChangesAsync();
+            }
+
+
+            // Reload courses so the returned DTO
+            // contains the student's latest courses.
+            var updatedStudent =
+                await _context.Students
+                    .Include(s => s.StudentCourses)
+                        .ThenInclude(sc => sc.Course)
+                            .ThenInclude(c => c!.Teacher)
+                    .AsNoTracking()
+                    .FirstAsync(s => s.Id == studentId);
+
+            return MapToDto(updatedStudent);
         }
 
-        public async Task<bool> RemoveCourseAsync(
-            int studentId)
-        {
-            var student = await _context.Students
-                .FirstOrDefaultAsync(s => s.Id == studentId);
 
-            if (student == null)
+        // ==========================================
+        // REMOVE COURSE
+        // ==========================================
+
+        public async Task<bool> RemoveCourseAsync(
+            int studentId,
+            int courseId)
+        {
+            var studentCourse =
+                await _context.StudentCourses
+                    .FirstOrDefaultAsync(sc =>
+                        sc.StudentId == studentId &&
+                        sc.CourseId == courseId);
+
+            if (studentCourse == null)
             {
                 return false;
             }
 
-            student.CourseId = null;
+            _context.StudentCourses.Remove(studentCourse);
 
             await _context.SaveChangesAsync();
 
@@ -208,27 +251,82 @@ namespace StudentManagement.Api.Services
         }
 
 
-        private static StudentDto MapToDto(Student student)
+        // ==========================================
+        // MAP TO DTO
+        // ==========================================
+
+        private static StudentDto MapToDto(
+            Student student)
         {
             return new StudentDto
             {
                 Id = student.Id,
-                AdmissionNumber = student.AdmissionNumber,
-                FirstName = student.FirstName,
-                LastName = student.LastName,
+
+                AdmissionNumber =
+                    student.AdmissionNumber,
+
+                FirstName =
+                    student.FirstName,
+
+                LastName =
+                    student.LastName,
 
                 FullName =
                     $"{student.FirstName} {student.LastName}".Trim(),
 
-                Email = student.Email,
-                DateOfBirth = student.DateOfBirth,
-                Gender = student.Gender,
-                Phone = student.Phone,
-                EnrollmentDate = student.EnrollmentDate,
-                IsActive = student.IsActive,
-                CourseId = student.CourseId,
-                CourseName = student.Course?.CourseName
+                Email =
+                    student.Email,
 
+                DateOfBirth =
+                    student.DateOfBirth,
+
+                Gender =
+                    student.Gender,
+
+                Phone =
+                    student.Phone,
+
+                EnrollmentDate =
+                    student.EnrollmentDate,
+
+                IsActive =
+                    student.IsActive,
+
+                Courses =
+                    student.StudentCourses
+                        .Where(sc => sc.Course != null)
+                        .Select(sc => new CourseDto
+                        {
+                            Id = sc.Course!.Id,
+
+                            CourseCode =
+                                sc.Course.CourseCode,
+
+                            CourseName =
+                                sc.Course.CourseName,
+
+                            Description =
+                                sc.Course.Description,
+
+                            Credits =
+                                sc.Course.Credits,
+
+                            Duration =
+                                sc.Course.Duration,
+
+                            IsActive =
+                                sc.Course.IsActive,
+
+                            TeacherId =
+                                sc.Course.TeacherId,
+
+                            TeacherName =
+                                sc.Course.Teacher == null
+                                    ? null
+                                    : $"{sc.Course.Teacher.FirstName} " +
+                                      $"{sc.Course.Teacher.LastName}"
+                        })
+                        .ToList()
             };
         }
     }

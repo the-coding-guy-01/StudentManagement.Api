@@ -24,8 +24,8 @@
 
         public bool IsActive { get; set; }
 
-        public int? CourseId { get; set; }
-
-        public string? CourseName { get; set; }
+        // Courses assigned to this student
+        public List<CourseDto> Courses { get; set; }
+            = new List<CourseDto>();
     }
 }

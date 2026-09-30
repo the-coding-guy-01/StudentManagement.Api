@@ -17,49 +17,44 @@ namespace StudentManagement.Api.Services
         }
 
 
-        public async Task<MyCourseDto?>
-            GetMyCourseAsync(int studentId)
+        public async Task<List<MyCourseDto>>
+            GetMyCoursesAsync(int studentId)
         {
             var student = await _context.Students
                 .AsNoTracking()
-                .Include(x => x.Course)
-                    .ThenInclude(x => x!.Teacher)
-                .FirstOrDefaultAsync(
-                    x => x.Id == studentId);
+                .Include(x => x.StudentCourses)
+                    .ThenInclude(x => x.Course)
+                        .ThenInclude(x => x!.Teacher)
+                .FirstOrDefaultAsync(x => x.Id == studentId);
 
-
-            if (student == null ||
-                student.Course == null)
+            if (student == null)
             {
-                return null;
+                return new List<MyCourseDto>();
             }
 
+            return student.StudentCourses
+                .Where(x => x.Course != null)
+                .Select(x => new MyCourseDto
+                {
+                    CourseId = x.Course!.Id,
 
-            var course = student.Course;
+                    CourseCode = x.Course.CourseCode,
 
+                    CourseName = x.Course.CourseName,
 
-            return new MyCourseDto
-            {
-                CourseId = course.Id,
+                    Description = x.Course.Description,
 
-                CourseCode = course.CourseCode,
+                    Credits = x.Course.Credits,
 
-                CourseName = course.CourseName,
+                    Duration = x.Course.Duration,
 
-                Description = course.Description,
+                    IsActive = x.Course.IsActive,
 
-                Credits = course.Credits,
-
-                Duration = course.Duration,
-
-                IsActive = course.IsActive,
-
-                TeacherName =
-                    course.Teacher == null
+                    TeacherName = x.Course.Teacher == null
                         ? null
-                        : $"{course.Teacher.FirstName} " +
-                          $"{course.Teacher.LastName}"
-            };
+                        : $"{x.Course.Teacher.FirstName} {x.Course.Teacher.LastName}"
+                })
+                .ToList();
         }
     }
 }

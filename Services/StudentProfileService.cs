@@ -21,12 +21,14 @@ namespace StudentManagement.Api.Services
             _environment = environment;
         }
 
-
         public async Task<StudentProfileDto?>
             GetProfileAsync(int studentId)
         {
             var student = await _context.Students
                 .AsNoTracking()
+                .Include(x => x.StudentCourses)
+                    .ThenInclude(x => x.Course)
+                        .ThenInclude(x => x!.Teacher)
                 .FirstOrDefaultAsync(x => x.Id == studentId);
 
             if (student == null)
@@ -34,19 +36,8 @@ namespace StudentManagement.Api.Services
                 return null;
             }
 
-            Course? course = null;
-
-            if (student.CourseId.HasValue)
-            {
-                course = await _context.Courses
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(
-                        x => x.Id == student.CourseId.Value);
-            }
-
-            return MapToDto(student, course);
+            return MapToDto(student);
         }
-
 
         public async Task<StudentProfileDto?>
             UpdateProfileAsync(
@@ -69,19 +60,20 @@ namespace StudentManagement.Api.Services
 
             await _context.SaveChangesAsync();
 
-            Course? course = null;
+            var updatedStudent = await _context.Students
+                .AsNoTracking()
+                .Include(x => x.StudentCourses)
+                    .ThenInclude(x => x.Course)
+                        .ThenInclude(x => x!.Teacher)
+                .FirstOrDefaultAsync(x => x.Id == studentId);
 
-            if (student.CourseId.HasValue)
+            if (updatedStudent == null)
             {
-                course = await _context.Courses
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(
-                        x => x.Id == student.CourseId.Value);
+                return null;
             }
 
-            return MapToDto(student, course);
+            return MapToDto(updatedStudent);
         }
-
 
         public async Task<StudentProfileDto?>
             UploadProfileImageAsync(
@@ -151,10 +143,9 @@ namespace StudentManagement.Api.Services
 
             Directory.CreateDirectory(folder);
 
-
             // Remove old picture
-            DeleteExistingImage(student.ProfileImagePath);
-
+            DeleteExistingImage(
+                student.ProfileImagePath);
 
             var fileName =
                 $"{student.Id}_{Guid.NewGuid():N}{extension}";
@@ -164,7 +155,6 @@ namespace StudentManagement.Api.Services
                     folder,
                     fileName);
 
-
             await using (var stream =
                 new FileStream(
                     fullPath,
@@ -173,28 +163,25 @@ namespace StudentManagement.Api.Services
                 await file.CopyToAsync(stream);
             }
 
-
             student.ProfileImagePath =
                 $"/uploads/student-profiles/{fileName}";
 
-
             await _context.SaveChangesAsync();
 
+            var updatedStudent = await _context.Students
+                .AsNoTracking()
+                .Include(x => x.StudentCourses)
+                    .ThenInclude(x => x.Course)
+                        .ThenInclude(x => x!.Teacher)
+                .FirstOrDefaultAsync(x => x.Id == studentId);
 
-            Course? course = null;
-
-            if (student.CourseId.HasValue)
+            if (updatedStudent == null)
             {
-                course = await _context.Courses
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(
-                        x => x.Id == student.CourseId.Value);
+                return null;
             }
 
-
-            return MapToDto(student, course);
+            return MapToDto(updatedStudent);
         }
-
 
         public async Task<bool>
             RemoveProfileImageAsync(
@@ -219,7 +206,6 @@ namespace StudentManagement.Api.Services
             return true;
         }
 
-
         private void DeleteExistingImage(
             string? imagePath)
         {
@@ -234,12 +220,10 @@ namespace StudentManagement.Api.Services
                         '/',
                         Path.DirectorySeparatorChar);
 
-
             var fullPath =
                 Path.Combine(
                     _environment.WebRootPath,
                     relativePath);
-
 
             if (File.Exists(fullPath))
             {
@@ -247,11 +231,8 @@ namespace StudentManagement.Api.Services
             }
         }
 
-
         private static StudentProfileDto
-            MapToDto(
-                Student student,
-                Course? course)
+            MapToDto(Student student)
         {
             return new StudentProfileDto
             {
@@ -267,7 +248,7 @@ namespace StudentManagement.Api.Services
                     student.LastName,
 
                 FullName =
-                    $"{student.FirstName} {student.LastName}",
+                    $"{student.FirstName} {student.LastName}".Trim(),
 
                 Email =
                     student.Email,
@@ -287,11 +268,36 @@ namespace StudentManagement.Api.Services
                 IsActive =
                     student.IsActive,
 
-                CourseCode =
-                    course?.CourseCode,
+                Courses =
+                    student.StudentCourses
+                        .Where(x => x.Course != null)
+                        .Select(x => new StudentProfileCourseDto
+                        {
+                            CourseId =
+                                x.Course!.Id,
 
-                CourseName =
-                    course?.CourseName,
+                            CourseCode =
+                                x.Course.CourseCode,
+
+                            CourseName =
+                                x.Course.CourseName,
+
+                            Description =
+                                x.Course.Description,
+
+                            Credits =
+                                x.Course.Credits,
+
+                            Duration =
+                                x.Course.Duration,
+
+                            TeacherName =
+                                x.Course.Teacher == null
+                                    ? null
+                                    : $"{x.Course.Teacher.FirstName} " +
+                                      $"{x.Course.Teacher.LastName}"
+                        })
+                        .ToList(),
 
                 ProfileImageUrl =
                     student.ProfileImagePath

@@ -42,8 +42,8 @@ namespace StudentManagement.Api.Models
         // Course relationship
         // -------------------------
 
-        public int? CourseId { get; set; }
-
-        public Course? Course { get; set; }
+        // Courses
+        public ICollection<StudentCourse> StudentCourses { get; set; }
+            = new List<StudentCourse>();
     }
 }

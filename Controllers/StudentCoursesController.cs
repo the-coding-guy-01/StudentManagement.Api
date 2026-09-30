@@ -15,7 +15,6 @@ namespace StudentManagement.Api.Controllers
         private readonly IStudentCourseService
             _studentCourseService;
 
-
         public StudentCoursesController(
             IStudentCourseService studentCourseService)
         {
@@ -23,14 +22,12 @@ namespace StudentManagement.Api.Controllers
                 studentCourseService;
         }
 
-
         [HttpGet]
-        public async Task<ActionResult<MyCourseDto>>
-            GetMyCourse()
+        public async Task<ActionResult<List<MyCourseDto>>>
+            GetMyCourses()
         {
             var studentIdValue =
                 User.FindFirstValue("StudentId");
-
 
             if (!int.TryParse(
                     studentIdValue,
@@ -39,24 +36,21 @@ namespace StudentManagement.Api.Controllers
                 return Forbid();
             }
 
-
-            var course =
+            var courses =
                 await _studentCourseService
-                    .GetMyCourseAsync(studentId);
+                    .GetMyCoursesAsync(studentId);
 
-
-            if (course == null)
+            if (courses == null || courses.Count == 0)
             {
                 return NotFound(
                     new
                     {
                         message =
-                            "No course has been assigned to this student."
+                            "No courses have been assigned to this student."
                     });
             }
 
-
-            return Ok(course);
+            return Ok(courses);
         }
     }
 }
