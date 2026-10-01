@@ -19,6 +19,18 @@ namespace StudentManagement.Api.Controllers
             _appUserService = appUserService;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(CreateUserDto request)
+        {
+            if (request.Role == "Student" && request.EnrollmentDate == null)
+                return BadRequest(new { message = "Enrollment date is required for students." });
+            if (request.Role == "Teacher" && request.JoinDate == null)
+                return BadRequest(new { message = "Joining date is required for teachers." });
+            var created = await _appUserService.CreateUserAsync(request);
+            if (!created) return Conflict(new { message = "Email or username is already in use, or the selected role details are invalid." });
+            return Ok(new { message = $"{request.Role} and login account created successfully." });
+        }
+
 
         [HttpPost("register-student")]
         public async Task<IActionResult> RegisterStudent(
