@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagement.Api.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class AnnouncementsController : ControllerBase
@@ -18,6 +18,7 @@ namespace StudentManagement.Api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin,Student")]
         public async Task<IActionResult> GetAnnouncement(int id)
         {
             try
@@ -32,6 +33,7 @@ namespace StudentManagement.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Student")]
         public async Task<IActionResult> GetAllAnnouncements()
         {
             var announcements = await _announcementService.GetAllAnnouncementsAsync();
@@ -39,6 +41,7 @@ namespace StudentManagement.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAnnouncement([FromBody] CreateAnnouncementDto createAnnouncementDto)
         {
             var announcement = await _announcementService.CreateAnnouncementAsync(createAnnouncementDto);
@@ -46,6 +49,7 @@ namespace StudentManagement.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAnnouncement(int id, [FromBody] UpdateAnnouncementDto updateAnnouncementDto)
         {
             try
@@ -60,6 +64,7 @@ namespace StudentManagement.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAnnouncement(int id)
         {
             try
