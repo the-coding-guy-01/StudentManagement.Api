@@ -21,6 +21,8 @@ namespace StudentManagement.Api.Data
 
         public DbSet<StudentCourse> StudentCourses { get; set; }
 
+        public DbSet<Announcement> Announcements { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

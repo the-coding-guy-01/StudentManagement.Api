@@ -47,6 +47,8 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<IAppUserService, AppUserService>();
 
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
+
 
 var jwtKey =
     builder.Configuration["Jwt:Key"]
