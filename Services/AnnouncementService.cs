@@ -22,6 +22,7 @@ namespace StudentManagement.Api.Services
             }
             return new AnnouncementDto
             {
+                Id = announcement.Id,
                 Title = announcement.Title,
                 Message = announcement.Message,
                 CreatedAt = announcement.CreatedAt,
@@ -35,6 +36,7 @@ namespace StudentManagement.Api.Services
             var announcements = await _context.Announcements.ToListAsync();
             return announcements.Select(a => new AnnouncementDto
             {
+                Id = a.Id,
                 Title = a.Title,
                 Message = a.Message,
                 CreatedAt = a.CreatedAt,
@@ -58,6 +60,7 @@ namespace StudentManagement.Api.Services
             await _context.SaveChangesAsync();
             return new AnnouncementDto
             {
+                Id = announcement.Id,
                 Title = announcement.Title,
                 Message = announcement.Message,
                 CreatedAt = announcement.CreatedAt,
@@ -80,6 +83,7 @@ namespace StudentManagement.Api.Services
             await _context.SaveChangesAsync();
             return new AnnouncementDto
             {
+                Id = announcement.Id,
                 Title = announcement.Title,
                 Message = announcement.Message,
                 CreatedAt = announcement.CreatedAt,
